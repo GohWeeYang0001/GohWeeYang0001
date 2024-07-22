@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>合并和处理图片</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+  }
+  canvas {
+    border: 1px solid #ccc;
+    margin-top: 20px;
+  }
+</style>
+</head>
+<body>
+  <h1>合并和处理图片</h1>
+  <label>图片1 URL：<input type="text" id="image1URL" value=""></label><br><br>
+  <label>图片2 URL：<input type="text" id="image2URL" value=""></label><br><br>
+  <button onclick="mergeImages()">合并图片</button>
+  <button onclick="downloadImage()">下载合并后的图片</button>
+  <br><br>
+  <canvas id="canvas"></canvas>
+
+  <script>
+    function mergeImages() {
+      const image1URL = document.getElementById('image1URL').value;
+      const image2URL = document.getElementById('image2URL').value;
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+
+      if (!image1URL || !image2URL) {
+        alert('请输入两个图片的URL！');
+        return;
+      }
+
+      // 创建两个图片对象
+      const img1 = new Image();
+      const img2 = new Image();
+
+      // 加载第一张图片
+      img1.onload = function() {
+        // 加载第二张图片
+        img2.onload = function() {
+          // 设置画布的大小为两张图片宽度之和，高度取最大值
+          canvas.width = img1.width + img2.width;
+          canvas.height = Math.max(img1.height, img2.height);
+
+          // 清空画布
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+          // 绘制第一张图片
+          ctx.drawImage(img1, 0, 0);
+
+          // 绘制第二张图片
+          ctx.drawImage(img2, img1.width, 0);
+
+          console.log('图片合并完成！');
+        };
+
+        // 设置第二张图片的 src 属性，触发加载
+        img2.src = image2URL;
+      };
+
+      // 设置第一张图片的 src 属性，触发加载
+      img1.src = image1URL;
+    }
+
+    function downloadImage() {
+      const canvas = document.getElementById('canvas');
+
+      // 获取 canvas 的 data URL
+      const dataURL = canvas.toDataURL('image/png');
+
+      // 创建一个临时的 a 标签元素
+      const link = document.createElement('a');
+      link.href = dataURL;
+      link.download = 'merged-image.png'; // 下载后的文件名
+      document.body.appendChild(link); // 将 a 标签添加到文档中
+      link.click(); // 模拟点击下载链接
+      document.body.removeChild(link); // 下载完成后移除 a 标签元素
+    }
+  </script>
+</body>
+</html>
