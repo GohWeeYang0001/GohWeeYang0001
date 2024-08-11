@@ -1,103 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>合并和处理图片</title>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    text-align: center;
-  }
-  canvas {
-    border: 1px solid #ccc;
-    margin-top: 20px;
-  }
-</style>
-
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8159553260805627" crossorigin="anonymous"></script>
-<meta name="google-adsense-account" content="ca-pub-8159553260805627">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-time Mouse Movement</title>
+    <style>
+        body {
+            height: 100vh;
+            margin: 0;
+            position: relative;
+        }
+        .user {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: red;
+        }
+        .self {
+            background-color: blue; /* 让自己的光标颜色不同 */
+            position: absolute;
+            width: 10px;
+            height: 10px;
+        }
+    </style>
 </head>
 <body>
-  <h1>合并和处理图片</h1>
-  <label>图片1 URL：<input type="text" id="image1URL" value=""></label><br><br>
-  <label>图片2 URL：<input type="text" id="image2URL" value=""></label><br><br>
-  <button onclick="mergeImages()">合并图片</button>
-  <button onclick="downloadImage()">下载合并后的图片</button>
-  <br><br>
-  <canvas id="canvas"></canvas>
-  
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8159553260805627"
-     crossorigin="anonymous"></script>
-<!-- 侧边 -->
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8159553260805627"
-     data-ad-slot="5908629035"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-  
-  <script>
-    function mergeImages() {
-      const image1URL = document.getElementById('image1URL').value;
-      const image2URL = document.getElementById('image2URL').value;
-      const canvas = document.getElementById('canvas');
-      const ctx = canvas.getContext('2d');
+    <script>
+        const ws = new WebSocket('ws://35.240.150.36:8080'); // 确保使用正确的IP地址
+        const userId = Math.random().toString(36).substring(2, 15); // Unique ID for each user
+        const users = {};
 
-      if (!image1URL || !image2URL) {
-        alert('请输入两个图片的URL！');
-        return;
-      }
+        // 处理接收到的消息
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
 
-      // 创建两个图片对象
-      const img1 = new Image();
-      const img2 = new Image();
+            // 如果数据是新用户的位置
+            if (!users[data.id]) {
+                users[data.id] = document.createElement('div');
+                users[data.id].className = 'user';
+                document.body.appendChild(users[data.id]);
+            }
 
-      // 加载第一张图片
-      img1.onload = function() {
-        // 加载第二张图片
-        img2.onload = function() {
-          // 设置画布的大小为两张图片宽度之和，高度取最大值
-          canvas.width = img1.width + img2.width;
-          canvas.height = Math.max(img1.height, img2.height);
-
-          // 清空画布
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-          // 绘制第一张图片
-          ctx.drawImage(img1, 0, 0);
-
-          // 绘制第二张图片
-          ctx.drawImage(img2, img1.width, 0);
-
-          console.log('图片合并完成！');
+            // 更新用户光标的位置
+            users[data.id].style.left = `${data.x}px`;
+            users[data.id].style.top = `${data.y}px`;
         };
 
-        // 设置第二张图片的 src 属性，触发加载
-        img2.src = image2URL;
-      };
+        
+        // 发送自身鼠标位置给ws
+        document.addEventListener('mousemove', (event) => {
+            const mouseData = {
+                id: userId,
+                x: event.clientX,
+                y: event.clientY
+            };
+            ws.send(JSON.stringify(mouseData));
 
-      // 设置第一张图片的 src 属性，触发加载
-      img1.src = image1URL;
-    }
-
-    function downloadImage() {
-      const canvas = document.getElementById('canvas');
-
-      // 获取 canvas 的 data URL
-      const dataURL = canvas.toDataURL('image/png');
-
-      // 创建一个临时的 a 标签元素
-      const link = document.createElement('a');
-      link.href = dataURL;
-      link.download = 'merged-image.png'; // 下载后的文件名
-      document.body.appendChild(link); // 将 a 标签添加到文档中
-      link.click(); // 模拟点击下载链接
-      document.body.removeChild(link); // 下载完成后移除 a 标签元素
-    }
-  </script>
+            // 确保自己光标位置也能显示出来
+            if (!users[userId]) {
+                users[userId] = document.createElement('div');
+                users[userId].className = 'self'; // 让自己的光标颜色不同
+                document.body.appendChild(users[userId]);
+            }
+            users[userId].style.left = `${event.clientX}px`;
+            users[userId].style.top = `${event.clientY}px`;
+        });
+    </script>
 </body>
 </html>
