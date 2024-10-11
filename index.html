@@ -34,7 +34,7 @@
     <div id="position">Move your mouse!</div>
 
     <script>
-        const ws = new WebSocket('wss://192.168.200.239:8080'); // 确保使用正确的IP地址
+        const ws = new WebSocket('ws://192.168.200.239:8080'); // 确保使用正确的IP地址
 
         // 这两个屏幕大小之后需要用户自行输入
         var screen_Max_X = 1535;
@@ -56,11 +56,80 @@
             document.getElementById('position').textContent = 'Mouse X: ' + x + ', Mouse Y: ' + y;
 
             const Mouse = {
+                type: 'move', // 添加事件类型
                 X_move: x,
                 Y_move: y
             };
 
             ws.send(JSON.stringify(Mouse));
+        });
+
+
+
+        // 阻止右键菜单的弹出
+        document.addEventListener('contextmenu', function (event) {
+            event.preventDefault();
+        });
+
+
+        // 鼠标按下事件
+        document.addEventListener('mousedown', function (event) {
+            var button;
+            
+            // 判断鼠标按钮
+            switch (event.button) {
+                case 0:
+                    button = 'L_Button'; // 左键
+                    break;
+                case 1:
+                    button = 'M_Button'; // 中键
+                    break;
+                case 2:
+                    button = 'R_Button'; // 右键
+                    break;
+                default:
+                    button = 'Unknown Button'; // 未知按钮
+            }
+
+            document.getElementById('position').textContent = button;
+
+
+            const ClickEvent = {
+                type: 'click_down', // 添加事件类型
+                button: button // 添加按钮信息
+            };
+
+            ws.send(JSON.stringify(ClickEvent));
+        });
+
+        // 鼠标按下事件
+        document.addEventListener('mouseup', function (event) {
+            var button;
+            
+            // 判断鼠标按钮
+            switch (event.button) {
+                case 0:
+                    button = 'L_Button'; // 左键
+                    break;
+                case 1:
+                    button = 'M_Button'; // 中键
+                    break;
+                case 2:
+                    button = 'R_Button'; // 右键
+                    break;
+                default:
+                    button = 'Unknown Button'; // 未知按钮
+            }
+
+            document.getElementById('position').textContent = button;
+
+
+            const ClickEvent = {
+                type: 'click_up', // 添加事件类型
+                button: button // 添加按钮信息
+            };
+
+            ws.send(JSON.stringify(ClickEvent));
         });
     </script>
 
